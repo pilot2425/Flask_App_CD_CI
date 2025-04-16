@@ -25,7 +25,7 @@ pipeline {
             }
         }
 
-        stage('Linting (flake8)') {
+        stage('Verficar código (flake8)') {
             agent {
                 docker {
                     image 'python:3.11-slim'
@@ -33,7 +33,7 @@ pipeline {
                 }
             }
             steps {
-                sh 'pip install flake8'  // Instala flake8 si no viene en requirements.txt
+                sh 'pip install flake8'  //No necesitamos instalar todos los requirements solo flake para ver si cumple con las normas de buena praxis de programación
                 sh 'flake8 app tests --count --show-source --statistics'
             }
         }
@@ -81,7 +81,7 @@ pipeline {
             }
             agent {
                 docker {
-                    image 'hashicorp/terraform:1.6' // Usa una imagen oficial de Terraform
+                    image 'hashicorp/terraform:1.6'
                     args '-u root'
                 }
             }
@@ -89,17 +89,23 @@ pipeline {
                 AWS_DEFAULT_REGION = 'eu-west-1'
             }
             steps {
-                withCredentials([[
-                    $class: 'AmazonWebServicesCredentialsBinding',
-                    credentialsId: 'aws-creds',
-                    accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                    secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                ]]) {
+                withCredentials([
+                    [
+                        $class: 'AmazonWebServicesCredentialsBinding',
+                        credentialsId: 'aws-creds',
+                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                    ]
+                ]) {
                     sh '''
                         cd infra
                         terraform init
                         terraform workspace new $DOCKER_TAG || terraform workspace select $DOCKER_TAG
-                        terraform apply -auto-approve -var="bucket_name=flask-app-jenkins-${DOCKER_TAG}"
+
+                        terraform apply -auto-approve \
+                            -var="environment=${DOCKER_TAG}" \
+                            -var="instance_name=flask-app-${DOCKER_TAG}" \
+                            -var="flask_port=5000"
                     '''
                 }
             }
