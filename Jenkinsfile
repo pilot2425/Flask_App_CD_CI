@@ -25,7 +25,7 @@ pipeline {
             }
         }
 
-        stage('Verificar código (flake8)') {
+        stage('Linting (flake8)') {
             agent {
                 docker {
                     image 'python:3.11-slim'
@@ -33,6 +33,7 @@ pipeline {
                 }
             }
             steps {
+                sh 'pip install flake8'  // Instala flake8 si no viene en requirements.txt
                 sh 'flake8 app tests --count --show-source --statistics'
             }
         }
