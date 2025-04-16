@@ -93,4 +93,3 @@ def test_update_data_without_name(client):
     response = client.put(f"/data/{data_id}", json={})
     assert response.status_code == 400
     assert response.get_json()["message"] == "New name is required"
-    
