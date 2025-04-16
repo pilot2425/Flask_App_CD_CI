@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = "flask-app"
-        DOCKER_TAG = "${env.BRANCH_NAME}"
+        DOCKER_TAG = "main"
     }
 
     stages {
@@ -43,10 +43,6 @@ pipeline {
         stage('Push a Docker Hub') {
             when {
                 branch 'main'
-                or {
-                    branch 'develop'
-                    branch 'master'
-                }
             }
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
