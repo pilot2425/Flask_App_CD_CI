@@ -33,6 +33,7 @@ pipeline {
                 }
             }
             steps {
+                sh 'pip install flake8'  // Instala flake8 si no viene en requirements.txt
                 sh 'flake8 app tests --count --show-source --statistics'
             }
         }
@@ -45,6 +46,8 @@ pipeline {
                 }
             }
             steps {
+                sh 'pip install -r requirements.txt'
+                sh 'pip install coverage pytest'
                 sh 'coverage run -m pytest'
                 sh 'coverage report -m'
             }
