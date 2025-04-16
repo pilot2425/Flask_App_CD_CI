@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'python:3.11-slim'
-            args '-u root'
-        }
-    }
+    agent any
 
     environment {
         DOCKER_IMAGE = "flask-app"
@@ -19,18 +14,36 @@ pipeline {
         }
 
         stage('Instalar dependencias') {
+            agent {
+                docker {
+                    image 'python:3.11-slim'
+                    args '-u root'
+                }
+            }
             steps {
                 sh 'pip install -r requirements.txt'
             }
         }
 
         stage('Linting (flake8)') {
+            agent {
+                docker {
+                    image 'python:3.11-slim'
+                    args '-u root'
+                }
+            }
             steps {
                 sh 'flake8 app tests --count --show-source --statistics'
             }
         }
 
         stage('Ejecutar tests') {
+            agent {
+                docker {
+                    image 'python:3.11-slim'
+                    args '-u root'
+                }
+            }
             steps {
                 sh 'coverage run -m pytest'
                 sh 'coverage report -m'
@@ -39,7 +52,7 @@ pipeline {
 
         stage('Construir imagen Docker') {
             steps {
-                sh 'docker build -t flask-app:main .'
+                sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
             }
         }
     }
