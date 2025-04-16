@@ -4,6 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = "flask-app"
         DOCKER_TAG = "main"
+        AWS_DEFAULT_REGION = 'eu-west-1'
     }
 
     stages {
@@ -13,7 +14,7 @@ pipeline {
             }
         }
 
-        stage('Instalar dependencias') {
+        stage('Instalar dependencias y ejecutar tests') {
             agent {
                 docker {
                     image 'python:3.11-slim'
@@ -21,35 +22,12 @@ pipeline {
                 }
             }
             steps {
-                sh 'pip install -r requirements.txt'
-            }
-        }
-
-        stage('Linting (flake8)') {
-            agent {
-                docker {
-                    image 'python:3.11-slim'
-                    args '-u root'
-                }
-            }
-            steps {
-                sh 'pip install flake8'  // Instala flake8 si no viene en requirements.txt
-                sh 'flake8 app tests --count --show-source --statistics'
-            }
-        }
-
-        stage('Ejecutar tests') {
-            agent {
-                docker {
-                    image 'python:3.11-slim'
-                    args '-u root'
-                }
-            }
-            steps {
-                sh 'pip install -r requirements.txt'
-                sh 'pip install coverage pytest'
-                sh 'coverage run -m pytest'
-                sh 'coverage report -m'
+                sh '''
+                    pip install -r requirements.txt  // Instala todas las dependencias necesarias
+                    flake8 app tests --count --show-source --statistics  // Linting
+                    coverage run -m pytest  // Ejecutar tests
+                    coverage report -m  // Mostrar reporte de coverage
+                '''
             }
         }
 
@@ -58,10 +36,11 @@ pipeline {
                 sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
             }
         }
+
         stage('Subir imagen a DockerHub') {
             when {
                 expression {
-                    return env.DOCKER_TAG == 'develop' || env.DOCKER_TAG == 'main' || env.DOCKER_TAG == 'master'
+                    return env.DOCKER_TAG in ['develop', 'main', 'master']
                 }
             }
             steps {
