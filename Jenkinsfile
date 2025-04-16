@@ -73,5 +73,36 @@ pipeline {
                 }
             }
         }
+        stage('Infraestructura como código - Terraform') {
+            when {
+                expression {
+                    return env.DOCKER_TAG in ['main', 'master', 'develop']
+                }
+            }
+            agent {
+                docker {
+                    image 'hashicorp/terraform:1.6' // Usa una imagen oficial de Terraform
+                    args '-u root'
+                }
+            }
+            environment {
+                AWS_DEFAULT_REGION = 'eu-west-1'
+            }
+            steps {
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-creds',
+                    accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                    secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                ]]) {
+                    sh '''
+                        cd infra
+                        terraform init
+                        terraform workspace new $DOCKER_TAG || terraform workspace select $DOCKER_TAG
+                        terraform apply -auto-approve -var="bucket_name=flask-app-jenkins-${DOCKER_TAG}"
+                    '''
+                }
+            }
+        }
     }
 }
