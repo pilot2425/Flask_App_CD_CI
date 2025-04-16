@@ -61,7 +61,7 @@ pipeline {
         stage('Subir imagen a DockerHub') {
             when {
                 expression {
-                    return env.DOCKER_TAG == 'develop' || env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'master'
+                    return env.DOCKER_TAG == 'develop' || env.DOCKER_TAG == 'main' || env.DOCKER_TAG == 'master'
                 }
             }
             steps {
