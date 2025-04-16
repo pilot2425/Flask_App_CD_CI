@@ -7,7 +7,6 @@ def client():
     app = create_app("development")
     app.config["TESTING"] = True
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
-    
     with app.app_context():
         db.create_all()
         yield app.test_client()
@@ -40,7 +39,6 @@ def test_delete_data(client):
     response_json = post_response.get_json()
     data_id = response_json["id"]  # Al crear devolvemos el ID
 
-
     # Borrar ese objeto
     delete_response = client.delete(f"/data/{data_id}")
     assert delete_response.status_code == 200
@@ -59,7 +57,6 @@ def test_get_tables(client):
     assert "tables" in data
     table_exists = "data" in data["tables"]
     assert table_exists  # la tabla debe existir porque es la de prueba
-
 
 
 def test_update_data(client):
@@ -96,3 +93,4 @@ def test_update_data_without_name(client):
     response = client.put(f"/data/{data_id}", json={})
     assert response.status_code == 400
     assert response.get_json()["message"] == "New name is required"
+    
