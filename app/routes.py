@@ -25,10 +25,11 @@ def insert_data():
     }), 201
 
 
-
 @data_routes.route("/data", methods=["GET"])
 def get_all_data():
-    data_list = [{"id": data.id, "name": data.name} for data in Data.query.all()]
+    data_list = [
+        {"id": data.id, "name": data.name} for data in Data.query.all()
+    ]
     return jsonify(data_list)
 
 
@@ -44,11 +45,13 @@ def delete_data(id):
     session.commit()
     return {"message": "Data deleted successfully"}
 
+
 @data_routes.route("/tables", methods=["GET"])
 def get_tables():
     inspector = inspect(db.engine)
     tables = inspector.get_table_names()
     return jsonify({"tables": tables})
+
 
 @data_routes.route("/data/<int:id>", methods=["PUT"])
 def update_data(id):
@@ -70,6 +73,3 @@ def update_data(id):
         "id": element_to_update.id,
         "name": element_to_update.name
     }), 200
-
-
-

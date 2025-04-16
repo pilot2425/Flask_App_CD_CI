@@ -6,7 +6,9 @@ class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "this_is_a_default_secret_key")
 
     # Database configuration
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URI","sqlite:///project.db")
+    SQLALCHEMY_DATABASE_URI = (
+        os.environ.get("DATABASE_URI", "sqlite:///project.db")
+    )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Add other configuration variables as needed
